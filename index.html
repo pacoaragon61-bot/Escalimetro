@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#3d2b1f">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
-    <title>Escalímetro Pro</title>
+    <title>Escalímetro Pro Musical</title>
     <style>
         :root { --alto-nota: 42px; --ancho-total: 1050px; --ancho-esca: 380px; --oro: #d4af37; --pergamino: #f4e4bc; }
         body { font-family: 'Georgia', serif; background: #1a120b; display: flex; flex-direction: column; align-items: center; padding: 10px; color: #3d2b1f; user-select: none; margin: 0; overscroll-behavior: none; }
@@ -27,31 +26,34 @@
         #viewport::-webkit-scrollbar { display: none; }
         #columna-notas { position: relative; width: 100%; height: 1050px; }
         .nota { height: 42px; width: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; color: rgba(61, 43, 31, 0.2); position: absolute; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .nota.resaltada { color: #000 !important; background: #fff !important; font-size: 17px; z-index: 5; }
+        .nota.resaltada { color: #000 !important; background: #fff !important; font-size: 17px; z-index: 5; border: 2px solid #2b1d0e; box-sizing: border-box; }
         .nota.tonica-roja { color: #cc0000 !important; font-size: 19px !important; z-index: 10; font-weight: 900; }
         #molde { position: absolute; bottom: 0; left: 10px; right: 10px; height: calc(42px * 13); background: rgba(184, 115, 51, 0.1); border: 3px solid #8b4513; z-index: 100; pointer-events: none; }
         .hueco { position: absolute; width: 94%; height: 38px; left: 3%; border: 2px solid #2b1d0e; background: rgba(255,255,255,0.4); cursor: pointer; pointer-events: auto; }
-        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; margin-bottom: 12px; }
+        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; margin-bottom: 15px; }
         canvas { width: 600px; height: 180px; }
     </style>
 </head>
 <body>
     <div id="panel-control">
-        <div id="instrucciones">Desliza para elegir tónica.</div>
+        <div id="instrucciones">Desliza para elegir tónica.<br>Usa flechas para enarmonía.</div>
         <div id="controles-derecha">
             <div class="btn-redondo" onclick="reproducirEscala()">🔊</div>
             <div class="btn-redondo" onclick="resetScroll()">↺</div>
         </div>
         <div id="wrapper-tonalidad">
-            <div class="btn-enarmonico" onclick="ajustarEnarmonia(-1)">♭</div>
+            <div id="btn-bemol" class="btn-enarmonico" onclick="ajustarEnarmonia(-1)">♭</div>
             <span id="tonalidad">Cargando...</span>
-            <div class="btn-enarmonico" onclick="ajustarEnarmonia(1)">♯</div>
+            <div id="btn-sostenido" class="btn-enarmonico" onclick="ajustarEnarmonia(1)">♯</div>
         </div>
         <div class="grupo-botones">
             <button onclick="cambiarEscala('mayor', this)" class="active">MAYOR</button>
             <button onclick="cambiarEscala('dorico', this)">DÓRICO</button>
             <button onclick="cambiarEscala('frigio', this)">FRIGIO</button>
+            <button onclick="cambiarEscala('lidio', this)">LIDIO</button>
+            <button onclick="cambiarEscala('mixolidio', this)">MIXOLIDIO</button>
             <button onclick="cambiarEscala('menorNat', this)">MENOR NAT.</button>
+            <button onclick="cambiarEscala('locrio', this)">LOCRIO</button>
         </div>
     </div>
     <div id="cuerpo-herramienta">
@@ -63,13 +65,20 @@
     </div>
 <script>
     const DATOS_NOTAS = [{s:"DO",b:"DO",p:0,alt:0},{s:"DO#",b:"REb",p:0,alt:7},{s:"RE",b:"RE",p:1,alt:2},{s:"RE#",b:"MIb",p:1,alt:-3},{s:"MI",b:"MI",p:2,alt:4},{s:"FA",b:"FA",p:3,alt:-1},{s:"FA#",b:"SOLb",p:3,alt:6},{s:"SOL",b:"SOL",p:4,alt:1},{s:"SOL#",b:"LAb",p:4,alt:-4},{s:"LA",b:"LA",p:5,alt:3},{s:"LA#",b:"SIb",p:5,alt:-2},{s:"SI",b:"SI",p:6,alt:5}];
-    const ESTRUCTURAS = {mayor:[0,2,4,5,7,9,11,12],menorNat:[0,2,3,5,7,8,10,12],dorico:[0,2,3,5,7,9,10,12],frigio:[0,1,3,5,7,8,10,12]};
-    const MODS = {mayor:0,menorNat:-3,dorico:-2,frigio:-4};
+    const ESTRUCTURAS = {mayor:[0,2,4,5,7,9,11,12],menorNat:[0,2,3,5,7,8,10,12],dorico:[0,2,3,5,7,9,10,12],frigio:[0,1,3,5,7,8,10,12],lidio:[0,2,4,6,7,9,11,12],mixolidio:[0,2,4,5,7,9,10,12],locrio:[0,1,3,5,6,8,10,12]};
+    const MODS = {mayor:0,menorNat:-3,dorico:-2,frigio:-4,lidio:1,mixolidio:-1,locrio:-5};
     const view = document.getElementById('viewport');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     let escalaActiva = 'mayor', enarmoniaManual = 0;
 
     function ajustarEnarmonia(v){ enarmoniaManual = v; draw(); }
+
+    function obtenerOrtografia(tObj, modo, grado, semi){
+        let semiN = (semi % 12 + 12) % 12;
+        let prefS = (tObj.alt + MODS[modo] >= 0);
+        if(enarmoniaManual===1) prefS=true; if(enarmoniaManual===-1) prefS=false;
+        return prefS ? DATOS_NOTAS[semiN].s : DATOS_NOTAS[semiN].b;
+    }
 
     function draw(){
         const tIdx = 24 - Math.round((view.scrollTop + 504) / 42);
@@ -79,20 +88,29 @@
         if(enarmoniaManual===1) prefS=true; if(enarmoniaManual===-1) prefS=false;
         document.getElementById('tonalidad').innerText = (prefS ? notaT.s : notaT.b) + " " + escalaActiva.toUpperCase();
         
-        const ctxE=document.getElementById('canvasEscala').getContext('2d');
-        const ctxA=document.getElementById('canvasArmadura').getContext('2d');
+        const ctxE=document.getElementById('canvasEscala').getContext('2d'), ctxA=document.getElementById('canvasArmadura').getContext('2d');
         [ctxE, ctxA].forEach(c=>{
-            c.clearRect(0,0,600,180); c.strokeStyle='#000';
+            c.clearRect(0,0,600,180); c.strokeStyle='#000'; c.lineWidth=1.5;
             for(let i=0;i<5;i++){ let y=80+i*10; c.beginPath(); c.moveTo(15,y); c.lineTo(580,y); c.stroke(); }
             c.fillStyle='#000'; c.font='45px serif'; c.fillText('𝄞',18,120);
         });
 
-        // Dibujar notas en el pentagrama
+        // ARMAZÓN DE ARMADURA
+        ctxA.font='28px serif';
+        let fM = notaT.alt + MODS[escalaActiva];
+        const sy=[85,100,80,95,110,90,105], by=[104,89,110,95,115,100,120];
+        if(fM>0) for(let i=0;i<fM;i++) ctxA.fillText('♯',70+i*18,sy[i]);
+        else if(fM<0) for(let i=0;i<Math.abs(fM);i++) ctxA.fillText('♭',70+i*18,by[i]);
+
+        // DIBUJO ESCALA CON LIGADURAS Y ALTERACIONES
         const pT = {0:0,1:prefS?0:1,2:1,3:prefS?1:2,4:2,5:3,6:prefS?3:4,7:4,8:prefS?4:5,9:5,10:prefS?5:6,11:prefS?6:0}[norm];
         ESTRUCTURAS[escalaActiva].forEach((inter, idx)=>{
             const x=110+idx*60, y=130-(pT+idx)*5;
             ctxE.beginPath(); ctxE.ellipse(x,y,9,7,0,0,2*Math.PI); ctxE.fill(); ctxE.stroke();
-            if(idx < ESTRUCTURAS[escalaActiva].length - 1){
+            const nN=obtenerOrtografia(notaT,escalaActiva,idx,norm+inter);
+            if(nN.includes("#")) ctxE.fillText('♯', x-25, y+8);
+            if(nN.includes("b")) ctxE.fillText('♭', x-25, y+6);
+            if(idx<ESTRUCTURAS[escalaActiva].length-1){
                 const nx=110+(idx+1)*60, ny=130-(pT+idx+1)*5;
                 ctxE.beginPath(); ctxE.moveTo(x+4,y+6); ctxE.bezierCurveTo(x+15,y+28,nx-15,ny+28,nx-4,ny+6); ctxE.stroke();
             }
@@ -107,11 +125,11 @@
         }
     }
     function play(f,t=0){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0.1,audioCtx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+t+0.6);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+t);o.stop(audioCtx.currentTime+t+0.6);}
+    function cambiarEscala(tipo,btn){escalaActiva=tipo;enarmoniaManual=0;const m=document.getElementById('molde');m.innerHTML='';ESTRUCTURAS[tipo].forEach(inter=>{const h=document.createElement('div');h.className='hueco';h.style.bottom=(inter*42)+"px";m.appendChild(h);});document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');draw();}
     function reproducirEscala(){const b=24-Math.round((view.scrollTop+504)/42);ESTRUCTURAS[escalaActiva].forEach((n,i)=>play(261.63*Math.pow(2,(b+n-12)/12),i*0.4));}
-    function cambiarEscala(tipo,btn){escalaActiva=tipo;enarmoniaManual=0;document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');draw();}
     function resetScroll(){view.scrollTo({top:view.scrollHeight,behavior:'smooth'});}
     view.addEventListener('scroll', draw);
     window.onload=()=>{ cambiarEscala('mayor',document.querySelector('button')); view.scrollTop=view.scrollHeight; };
 </script>
 </body>
-</html>
+</html>    
