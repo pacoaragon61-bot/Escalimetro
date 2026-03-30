@@ -6,23 +6,16 @@
     <meta name="theme-color" content="#3d2b1f">
     <meta name="mobile-web-app-capable" content="yes">
     <link rel="manifest" href="manifest.json">
-    <title>Escalímetro Pro - Perfección Final</title>
+    <title>Escalímetro Pro</title>
     <style>
         :root { --alto-nota: 42px; --ancho-total: 1050px; --ancho-esca: 380px; --oro: #d4af37; --pergamino: #f4e4bc; }
         body { font-family: 'Georgia', serif; background: #1a120b; display: flex; flex-direction: column; align-items: center; padding: 10px; color: #3d2b1f; user-select: none; margin: 0; overscroll-behavior: none; }
-        
-        /* Ajuste para que en el móvil no se vea gigante */
-        @media (max-width: 1060px) {
-            body { transform: scale(0.85); transform-origin: top center; }
-        }
-
+        @media (max-width: 1060px) { body { transform: scale(0.85); transform-origin: top center; } }
         #panel-control { background: #3d2b1f; padding: 12px 20px; border-radius: 4px; margin-bottom: 10px; border: 4px double var(--oro); width: var(--ancho-total); box-shadow: 0 8px 25px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; height: 160px; }
         #instrucciones { position: absolute; left: 20px; top: 15px; width: 230px; color: var(--oro); font-size: 11px; line-height: 1.2; text-align: left; opacity: 0.9; font-style: italic; }
         #wrapper-tonalidad { display: flex; align-items: center; gap: 20px; margin-bottom: 10px; margin-top: 5px; width: 55%; justify-content: center; }
         #tonalidad { font-size: 30px; font-variant: small-caps; font-weight: bold; color: var(--oro); border-bottom: 1px solid var(--oro); padding-bottom: 6px; text-align: center; flex-grow: 1; }
         .btn-enarmonico { background: var(--oro); border: 2px solid #2b1d0e; color: #1a120b; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-weight: bold; font-size: 18px; box-shadow: 0 3px 0 #8b6d1b; }
-        @keyframes parpadeo-oro { 0% { background: var(--oro); } 50% { background: #fff; box-shadow: 0 0 15px #fff; } 100% { background: var(--oro); } }
-        .animar-aviso { animation: parpadeo-oro 1.5s infinite; }
         #controles-derecha { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .btn-redondo { background: var(--oro); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #3d2b1f; font-size: 18px; }
         .grupo-botones { display: flex; gap: 5px; justify-content: center; margin-bottom: 6px; width: 100%; }
@@ -38,38 +31,27 @@
         .nota.tonica-roja { color: #cc0000 !important; font-size: 19px !important; z-index: 10; font-weight: 900; }
         #molde { position: absolute; bottom: 0; left: 10px; right: 10px; height: calc(42px * 13); background: rgba(184, 115, 51, 0.1); border: 3px solid #8b4513; z-index: 100; pointer-events: none; }
         .hueco { position: absolute; width: 94%; height: 38px; left: 3%; border: 2px solid #2b1d0e; background: rgba(255,255,255,0.4); cursor: pointer; pointer-events: auto; }
-        #area-musical { width: 620px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
-        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; }
-        .box-pentagrama span { font-weight: bold; text-transform: uppercase; font-size: 13px; color: #3d2b1f; margin-bottom: 5px; display: block; }
-        canvas { width: 100%; height: 180px; }
+        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; margin-bottom: 12px; }
+        canvas { width: 600px; height: 180px; }
     </style>
 </head>
 <body>
     <div id="panel-control">
-        <div id="instrucciones">Desliza para elegir tónica.<br>Pulsa para el MODO.<br>Usa flechas si parpadea.</div>
+        <div id="instrucciones">Desliza para elegir tónica.</div>
         <div id="controles-derecha">
             <div class="btn-redondo" onclick="reproducirEscala()">🔊</div>
             <div class="btn-redondo" onclick="resetScroll()">↺</div>
         </div>
         <div id="wrapper-tonalidad">
-            <div id="btn-bemol" class="btn-enarmonico" onclick="ajustarEnarmonia(-1)">♭</div>
+            <div class="btn-enarmonico" onclick="ajustarEnarmonia(-1)">♭</div>
             <span id="tonalidad">Cargando...</span>
-            <div id="btn-sostenido" class="btn-enarmonico" onclick="ajustarEnarmonia(1)">♯</div>
+            <div class="btn-enarmonico" onclick="ajustarEnarmonia(1)">♯</div>
         </div>
         <div class="grupo-botones">
             <button onclick="cambiarEscala('mayor', this)" class="active">MAYOR</button>
             <button onclick="cambiarEscala('dorico', this)">DÓRICO</button>
             <button onclick="cambiarEscala('frigio', this)">FRIGIO</button>
-            <button onclick="cambiarEscala('lidio', this)">LIDIO</button>
-            <button onclick="cambiarEscala('mixolidio', this)">MIXOLIDIO</button>
             <button onclick="cambiarEscala('menorNat', this)">MENOR NAT.</button>
-            <button onclick="cambiarEscala('locrio', this)">LOCRIO</button>
-        </div>
-        <div class="grupo-botones">
-            <button onclick="cambiarEscala('menorArm', this)">MENOR ARM.</button>
-            <button onclick="cambiarEscala('menorMel', this)">MENOR MEL.</button>
-            <button onclick="cambiarEscala('pentamayor', this)">PENTA MAYOR</button>
-            <button onclick="cambiarEscala('pentamenor', this)">PENTA MENOR</button>
         </div>
     </div>
     <div id="cuerpo-herramienta">
@@ -81,40 +63,13 @@
     </div>
 <script>
     const DATOS_NOTAS = [{s:"DO",b:"DO",p:0,alt:0},{s:"DO#",b:"REb",p:0,alt:7},{s:"RE",b:"RE",p:1,alt:2},{s:"RE#",b:"MIb",p:1,alt:-3},{s:"MI",b:"MI",p:2,alt:4},{s:"FA",b:"FA",p:3,alt:-1},{s:"FA#",b:"SOLb",p:3,alt:6},{s:"SOL",b:"SOL",p:4,alt:1},{s:"SOL#",b:"LAb",p:4,alt:-4},{s:"LA",b:"LA",p:5,alt:3},{s:"LA#",b:"SIb",p:5,alt:-2},{s:"SI",b:"SI",p:6,alt:5}];
-    const ESTRUCTURAS = {mayor:[0,2,4,5,7,9,11,12],menorNat:[0,2,3,5,7,8,10,12],dorico:[0,2,3,5,7,9,10,12],frigio:[0,1,3,5,7,8,10,12],lidio:[0,2,4,6,7,9,11,12],mixolidio:[0,2,4,5,7,9,10,12],locrio:[0,1,3,5,6,8,10,12],menorArm:[0,2,3,5,7,8,11,12],menorMel:[0,2,3,5,7,9,11,12],pentamayor:[0,2,4,7,9,12],pentamenor:[0,3,5,7,10,12]};
-    const MODS = {mayor:0,menorNat:-3,dorico:-2,frigio:-4,lidio:1,mixolidio:-1,locrio:-5,menorArm:-3,menorMel:-3,pentamayor:0,pentamenor:-3};
-    const NOMBRES_ESCALAS = {mayor:"MAYOR",menorNat:"MENOR NAT.",dorico:"DÓRICO",frigio:"FRIGIO",lidio:"LIDIO",mixolidio:"MIXOLIDIO",locrio:"LOCRIO",menorArm:"MENOR ARM.",menorMel:"MENOR MEL.",pentamayor:"PENTA MAYOR",pentamenor:"PENTA MENOR"};
+    const ESTRUCTURAS = {mayor:[0,2,4,5,7,9,11,12],menorNat:[0,2,3,5,7,8,10,12],dorico:[0,2,3,5,7,9,10,12],frigio:[0,1,3,5,7,8,10,12]};
+    const MODS = {mayor:0,menorNat:-3,dorico:-2,frigio:-4};
     const view = document.getElementById('viewport');
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    let escalaActiva = 'mayor', enarmoniaManual = 0, displayT_Global = "";
+    let escalaActiva = 'mayor', enarmoniaManual = 0;
 
-    function esEnarmonicoHabilitado(n){
-        if(escalaActiva==='mayor' && (n===11||n===1||n===6)) return true;
-        if(escalaActiva.includes('menor') && (n===3||n===8||n===10)) return true;
-        return false;
-    }
-
-    function ajustarEnarmonia(v){
-        const n = ((24 - Math.round((view.scrollTop + 504) / 42)) % 12 + 12) % 12;
-        if(esEnarmonicoHabilitado(n)){ enarmoniaManual = v; draw(); }
-    }
-
-    function obtenerOrtografia(tObj, modo, grado, semi){
-        let semiN = (semi % 12 + 12) % 12;
-        let prefS = (tObj.alt + MODS[modo] >= 0);
-        if(enarmoniaManual===1) prefS=true; if(enarmoniaManual===-1) prefS=false;
-        if(tObj.s==="SI" && enarmoniaManual===-1 && modo==='mayor') return ["DOb","REb","MIb","FAb","SOLb","LAb","SIb","DOb"][grado];
-        if(prefS){
-            if(tObj.s==="SOL" && semiN===0) return "DO"; if(tObj.s==="DO" && semiN===5) return "FA";
-            if(tObj.s==="LA" && (semiN===0||semiN===5)) return semiN===0?"DO":"FA";
-            if(tObj.s==="MI" && semiN===0) return "DO";
-            if(semiN===5 && !["DO","SOL","LA","MI"].includes(tObj.s)) return "MI#";
-            if(semiN===0 && !["DO","RE","LA","MI"].includes(tObj.s)) return "SI#";
-        } else {
-            if(tObj.s==="FA" && semiN===4) return "MI";
-        }
-        return prefS ? DATOS_NOTAS[semiN].s : DATOS_NOTAS[semiN].b;
-    }
+    function ajustarEnarmonia(v){ enarmoniaManual = v; draw(); }
 
     function draw(){
         const tIdx = 24 - Math.round((view.scrollTop + 504) / 42);
@@ -122,31 +77,41 @@
         const notaT = DATOS_NOTAS[norm];
         let prefS = (notaT.alt + MODS[escalaActiva] >= 0);
         if(enarmoniaManual===1) prefS=true; if(enarmoniaManual===-1) prefS=false;
-        let dT = prefS ? notaT.s : notaT.b;
-        if(norm===11 && !prefS) dT="DOb";
-        displayT_Global = dT;
-        document.getElementById('tonalidad').innerText = dT + " " + NOMBRES_ESCALAS[escalaActiva];
+        document.getElementById('tonalidad').innerText = (prefS ? notaT.s : notaT.b) + " " + escalaActiva.toUpperCase();
         
-        // Dibujo de pentagramas (simplificado para que funcione siempre)
-        const ctxE=document.getElementById('canvasEscala').getContext('2d'), ctxA=document.getElementById('canvasArmadura').getContext('2d');
-        [ctxE, ctxA].forEach(c=>{c.clearRect(0,0,600,180);c.strokeStyle='#000';c.lineWidth=1.8;for(let i=0;i<5;i++){let y=80+i*10;c.beginPath();c.moveTo(15,y);c.lineTo(580,y);c.stroke();}c.fillStyle='#000';c.font='45px serif';c.fillText('𝄞',18,120);});
-        
+        const ctxE=document.getElementById('canvasEscala').getContext('2d');
+        const ctxA=document.getElementById('canvasArmadura').getContext('2d');
+        [ctxE, ctxA].forEach(c=>{
+            c.clearRect(0,0,600,180); c.strokeStyle='#000';
+            for(let i=0;i<5;i++){ let y=80+i*10; c.beginPath(); c.moveTo(15,y); c.lineTo(580,y); c.stroke(); }
+            c.fillStyle='#000'; c.font='45px serif'; c.fillText('𝄞',18,120);
+        });
+
+        // Dibujar notas en el pentagrama
+        const pT = {0:0,1:prefS?0:1,2:1,3:prefS?1:2,4:2,5:3,6:prefS?3:4,7:4,8:prefS?4:5,9:5,10:prefS?5:6,11:prefS?6:0}[norm];
+        ESTRUCTURAS[escalaActiva].forEach((inter, idx)=>{
+            const x=110+idx*60, y=130-(pT+idx)*5;
+            ctxE.beginPath(); ctxE.ellipse(x,y,9,7,0,0,2*Math.PI); ctxE.fill(); ctxE.stroke();
+            if(idx < ESTRUCTURAS[escalaActiva].length - 1){
+                const nx=110+(idx+1)*60, ny=130-(pT+idx+1)*5;
+                ctxE.beginPath(); ctxE.moveTo(x+4,y+6); ctxE.bezierCurveTo(x+15,y+28,nx-15,ny+28,nx-4,ny+6); ctxE.stroke();
+            }
+        });
+
         const col=document.getElementById('columna-notas'); col.innerHTML='';
-        const estA=ESTRUCTURAS[escalaActiva];
         for(let i=24;i>=0;i--){
-            const d=document.createElement('div'), rel=i-tIdx; const esE=estA.includes(rel);
+            const d=document.createElement('div'), rel=i-tIdx, esE=ESTRUCTURAS[escalaActiva].includes(rel);
             d.className='nota'+(esE?' resaltada':'')+(rel===0?' tonica-roja':'');
-            if(esE){ d.innerText=obtenerOrtografia(notaT,escalaActiva,estA.indexOf(rel),i)+(i>=12?"'":""); }
-            else { d.innerText=DATOS_NOTAS[i%12].s+"/"+DATOS_NOTAS[i%12].b+(i>=12?"'":""); }
+            d.innerText=(prefS?DATOS_NOTAS[i%12].s:DATOS_NOTAS[i%12].b)+(i>=12?"'":"");
             d.style.bottom=(i*42)+"px"; col.appendChild(d);
         }
     }
-    function play(f,t=0){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0.15,audioCtx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+t+0.8);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+t);o.stop(audioCtx.currentTime+t+0.8);}
-    function cambiarEscala(tipo,btn){escalaActiva=tipo;enarmoniaManual=0;const m=document.getElementById('molde');m.innerHTML='';ESTRUCTURAS[tipo].forEach(inter=>{const h=document.createElement('div');h.className='hueco';h.style.bottom=(inter*42)+"px";h.onmousedown=()=>play(261.63*Math.pow(2,((24-Math.round((view.scrollTop+504)/42))+inter-12)/12));m.appendChild(h);});document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');draw();}
+    function play(f,t=0){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.frequency.value=f;g.gain.setValueAtTime(0.1,audioCtx.currentTime+t);g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+t+0.6);o.connect(g);g.connect(audioCtx.destination);o.start(audioCtx.currentTime+t);o.stop(audioCtx.currentTime+t+0.6);}
     function reproducirEscala(){const b=24-Math.round((view.scrollTop+504)/42);ESTRUCTURAS[escalaActiva].forEach((n,i)=>play(261.63*Math.pow(2,(b+n-12)/12),i*0.4));}
+    function cambiarEscala(tipo,btn){escalaActiva=tipo;enarmoniaManual=0;document.querySelectorAll('button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');draw();}
     function resetScroll(){view.scrollTo({top:view.scrollHeight,behavior:'smooth'});}
-    view.addEventListener('scroll',()=>{enarmoniaManual=0;draw();clearTimeout(window.sn);window.sn=setTimeout(()=>view.scrollTo({top:Math.round(view.scrollTop/42)*42,behavior:'smooth'}),100);});
-    window.onload=()=>{cambiarEscala('mayor',document.querySelector('button'));view.scrollTop=view.scrollHeight;};
+    view.addEventListener('scroll', draw);
+    window.onload=()=>{ cambiarEscala('mayor',document.querySelector('button')); view.scrollTop=view.scrollHeight; };
 </script>
 </body>
 </html>
