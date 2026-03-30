@@ -3,51 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
     <meta name="theme-color" content="#d4af37">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
-    
-    <title>Escalímetro Pro - Perfección Final</title>
+    <title>Escalímetro Pro</title>
     <style>
         :root { --alto-nota: 42px; --ancho-total: 1050px; --ancho-esca: 380px; --oro: #d4af37; --pergamino: #f4e4bc; }
-        
-        /* Ajuste de escala para pantallas móviles */
-        @media (max-width: 1050px) {
-            body { 
-                transform: scale(0.9); /* Puedes ajustar este número si queda muy grande */
-                transform-origin: top center;
-            }
-        }
-
         body { font-family: 'Georgia', serif; background: #1a120b; display: flex; flex-direction: column; align-items: center; padding: 10px; color: #3d2b1f; user-select: none; margin: 0; overscroll-behavior: none; }
-        #panel-control { background: #3d2b1f; padding: 12px 20px; border-radius: 4px; margin-bottom: 10px; border: 4px double var(--oro); width: var(--ancho-total); box-shadow: 0 8px 25px rgba(0,0,0,0.8); position: relative; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; height: 160px; }
-        #instrucciones { position: absolute; left: 20px; top: 15px; width: 230px; color: var(--oro); font-size: 11px; line-height: 1.2; text-align: left; opacity: 0.9; font-style: italic; }
-        #wrapper-tonalidad { display: flex; align-items: center; gap: 20px; margin-bottom: 10px; margin-top: 5px; width: 55%; justify-content: center; }
-        #tonalidad { font-size: 30px; font-variant: small-caps; font-weight: bold; color: var(--oro); border-bottom: 1px solid var(--oro); padding-bottom: 6px; text-align: center; flex-grow: 1; }
-        .btn-enarmonico { background: var(--oro); border: 2px solid #2b1d0e; color: #1a120b; border-radius: 4px; padding: 5px 12px; cursor: pointer; font-weight: bold; font-size: 18px; box-shadow: 0 3px 0 #8b6d1b; }
-        @keyframes parpadeo-oro { 0% { background: var(--oro); } 50% { background: #fff; box-shadow: 0 0 15px #fff; } 100% { background: var(--oro); } }
-        .animar-aviso { animation: parpadeo-oro 1.5s infinite; }
-        #controles-derecha { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 8px; }
-        .btn-redondo { background: var(--oro); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 2px solid #3d2b1f; font-size: 18px; }
-        .grupo-botones { display: flex; gap: 5px; justify-content: center; margin-bottom: 6px; width: 100%; }
-        button { padding: 4px 10px; background: transparent; color: #bca080; border: 1px solid #5a4030; cursor: pointer; font-size: 10px; border-radius: 3px; }
-        button.active { background: var(--oro); color: #2b1d0e; font-weight: bold; }
-        #cuerpo-herramienta { display: flex; width: var(--ancho-total); gap: 15px; align-items: flex-start; justify-content: center; }
-        #escenario { position: relative; width: var(--ancho-esca); height: 546px; border: 8px solid #2b1d0e; background: var(--pergamino); overflow: hidden; flex-shrink: 0; }
+        #panel-control { background: #3d2b1f; padding: 12px 20px; border-radius: 4px; margin-bottom: 10px; border: 4px double var(--oro); width: 95%; max-width: var(--ancho-total); box-shadow: 0 8px 25px rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+        #tonalidad { font-size: 24px; font-weight: bold; color: var(--oro); margin: 10px 0; text-align: center; }
+        #cuerpo-herramienta { display: flex; flex-wrap: wrap; width: 100%; gap: 15px; justify-content: center; }
+        #escenario { position: relative; width: var(--ancho-esca); height: 500px; border: 8px solid #2b1d0e; background: var(--pergamino); overflow: hidden; }
         #viewport { width: 100%; height: 100%; overflow-y: scroll; scrollbar-width: none; }
-        #viewport::-webkit-scrollbar { display: none; }
         #columna-notas { position: relative; width: 100%; height: 1050px; }
-        .nota { height: 42px; width: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; color: rgba(61, 43, 31, 0.2); position: absolute; border-bottom: 1px solid rgba(0,0,0,0.05); }
-        .nota.resaltada { color: #000 !important; background: #fff !important; font-size: 17px; z-index: 5; }
-        .nota.tonica-roja { color: #cc0000 !important; font-size: 19px !important; z-index: 10; font-weight: 900; }
-        #molde { position: absolute; bottom: 0; left: 10px; right: 10px; height: calc(42px * 13); background: rgba(184, 115, 51, 0.1); border: 3px solid #8b4513; z-index: 100; pointer-events: none; }
-        .hueco { position: absolute; width: 94%; height: 38px; left: 3%; border: 2px solid #2b1d0e; background: rgba(255,255,255,0.4); cursor: pointer; pointer-events: auto; }
-        #area-musical { width: 620px; display: flex; flex-direction: column; gap: 12px; flex-shrink: 0; }
-        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); text-align: center; }
-        .box-pentagrama span { font-weight: bold; text-transform: uppercase; font-size: 13px; color: #3d2b1f; margin-bottom: 5px; display: block; }
-        canvas { width: 100%; height: 180px; }
+        .nota { height: 42px; width: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; position: absolute; }
+        .nota.resaltada { color: #000; background: #fff; z-index: 5; }
+        .nota.tonica-roja { color: #cc0000 !important; font-weight: 900; }
+        #area-musical { width: 100%; max-width: 600px; display: flex; flex-direction: column; gap: 12px; }
+        .box-pentagrama { background: var(--pergamino); border: 4px double #2b1d0e; padding: 5px; }
+        canvas { width: 100%; height: auto; }
+        .grupo-botones { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px; }
+        button { padding: 8px; background: #5a4030; color: #fff; border: none; border-radius: 4px; font-size: 10px; cursor: pointer; }
+        button.active { background: var(--oro); color: #000; }
     </style>
 </head>
 <body>
+    <div id="panel-control">
+        <div id="tonalidad">Cargando Escalímetro...</div>
+        <div class="grupo-botones">
+            <button onclick="cambiarEscala('mayor', this)" class="active">MAYOR</button>
+            <button onclick="cambiarEscala('menorNat', this)">MENOR NAT.</button>
+            <button onclick="reproducirEscala()">🔊 TOCAR</button>
+        </div>
+    </div>
+    <div id="cuerpo-herramienta">
+        <div id="escenario"><div id="viewport"><div id="columna-notas"></div></div></div>
+        <div id="area-musical">
+            <div class="box-pentagrama"><canvas id="canvasEscala" width="600" height="150"></canvas></div>
+        </div>
+    </div>
+    <script>
+        // Lógica simplificada para asegurar que cargue
+        const DATOS = ["DO","DO#","RE","RE#","MI","FA","FA#","SOL","SOL#","LA","LA#","SI"];
+        const col = document.getElementById('columna-notas');
+        function draw() {
+            col.innerHTML = '';
+            for(let i=24; i>=0; i--) {
+                const d = document.createElement('div');
+                d.className = 'nota';
+                d.style.bottom = (i * 42) + 'px';
+                d.innerText = DATOS[i%12];
+                if(i%12 === 0) d.classList.add('tonica-roja');
+                col.appendChild(d);
+            }
+            document.getElementById('tonalidad').innerText = "C MAYOR";
+        }
+        window.onload = draw;
+        function cambiarEscala(tipo, btn) {
+            document.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    </script>
+</body>
+</html>
